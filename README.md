@@ -114,7 +114,7 @@ The plugin can be configured via the `config.json` file located in the plugin di
 The plugin uses `appIDs.txt` to determine which games should show the FIX button. The file contains over 1,000 Steam AppIDs for games with available fixes.
 
 **To add more games:**
- Right click on the FIX button and click on refresh appIDs.txt, and it should replace it with the latest on my github.
+ Replace appIDs.txt with the latest on my github.
 
 **To disable filtering** (show button for all games):
 - Delete or rename `appIDs.txt`
@@ -329,5 +329,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 This plugin is provided as-is. Always backup your games before applying fixes.
 
 [Report Bug](../../issues) · [Request Feature](../../issues) · [Documentation](../../wiki)
+
 
 </div>
