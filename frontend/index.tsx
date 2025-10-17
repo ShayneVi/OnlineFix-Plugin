@@ -13,13 +13,13 @@ const apply_online_fix = callable<[{ app_id: number, target_path: string }], any
 const is_appid_supported = callable<[{ app_id: number }], boolean>('Backend.is_appid_supported');
 
 const WaitForElement = async (sel: string, parent = document) =>
-	[...(await Millennium.findElement(parent, sel))][0];
+    [...(await Millennium.findElement(parent, sel))][0];
 
 const WaitForElementTimeout = async (sel: string, parent = document, timeOut = 1000) =>
-	[...(await Millennium.findElement(parent, sel, timeOut))][0];
+    [...(await Millennium.findElement(parent, sel, timeOut))][0];
 
 const WaitForElementList = async (sel: string, parent = document) =>
-	[...(await Millennium.findElement(parent, sel))];
+    [...(await Millennium.findElement(parent, sel))];
 
 async function OnPopupCreation(popup) {
     if (popup.m_strName === "SP Desktop_uid0") {
@@ -56,128 +56,130 @@ async function OnPopupCreation(popup) {
 
                 console.log(`[onlinefix] AppID ${appId} is supported, adding button`);
 
-                const sizerDiv = await WaitForElement(`div.${findModule(e => e.BoxSizer).BoxSizer}`, popup.m_popup.document);
-                const savedX = await get_app_x({ app_id: appId });
-                const savedY = await get_app_y({ app_id: appId });
-
-                if (savedX !== -1 || savedY !== -1) {
-                    sizerDiv.style.left = savedX + "px";
-                    sizerDiv.style.top = savedY + "px";
-                }
-
-                const movementHandler = async () => {
-                    if (!sizerDiv.classList.contains("logopos-header")) {
-                        async function makeDraggableElement(elmnt) {
-                            var diffX = 0, diffY = 0, lastX = 0, lastY = 0, elmntX = 0, elmntY = 0;
-                            elmnt.onmousedown = dragMouseDown;
-                            elmnt.style.cursor = "move";
-
-                            async function dragMouseDown(e) {
-                                e = e || window.event;
-                                e.preventDefault();
-                                lastX = e.clientX;
-                                lastY = e.clientY;
-                                popup.m_popup.document.onmouseup = elementRelease;
-                                popup.m_popup.document.onmousemove = elementDrag;
-                            }
-
-                            async function elementDrag(e) {
-                                e = e || window.event;
-                                e.preventDefault();
-                                diffX = lastX - e.clientX;
-                                diffY = lastY - e.clientY;
-                                lastX = e.clientX;
-                                lastY = e.clientY;
-                                elmntY = (elmnt.offsetTop - diffY);
-                                elmntX = (elmnt.offsetLeft - diffX);
-                                elmnt.style.top = elmntY + "px";
-                                elmnt.style.left = elmntX + "px";
-                            }
-
-                            async function elementRelease() {
-                                popup.m_popup.document.onmouseup = null;
-                                popup.m_popup.document.onmousemove = null;
-                                await set_app_xy({ app_id: appId, pos_x: elmntX, pos_y: elmntY });
-                            }
-                        }
-
-                        makeDraggableElement(sizerDiv);
-                        sizerDiv.classList.add("logopos-header");
-
-                        const topCapsuleDiv = await WaitForElement(`div.${findModule(e => e.TopCapsule).TopCapsule}`, popup.m_popup.document);
-                        const oldDoneBtn = topCapsuleDiv.querySelector("div.logo-move-done-button");
-                        if (oldDoneBtn) {
-                            oldDoneBtn.style.display = "";
-                        } else {
-                            const doneBtn = document.createElement('div');
-                            doneBtn.className = "logo-move-done-button";
-                            doneBtn.style.position = "absolute";
-                            doneBtn.style.right = "20px";
-                            doneBtn.style.bottom = "20px";
-                            render(<DialogButton style={{width: "50px"}} onClick={movementHandler}>Done</DialogButton>, doneBtn);
-                            topCapsuleDiv.appendChild(doneBtn);
-                        }
-                    } else {
-                        sizerDiv.onmousedown = null;
-                        sizerDiv.style.cursor = "";
-                        sizerDiv.classList.remove("logopos-header");
-
-                        const topCapsuleDiv = await WaitForElement(`div.${findModule(e => e.TopCapsule).TopCapsule}`, popup.m_popup.document);
-                        const oldDoneBtn = topCapsuleDiv.querySelector("div.logo-move-done-button");
-                        if (oldDoneBtn) {
-                            oldDoneBtn.style.display = "none";
-                        }
-                    }
-                };
+                // Wait a bit for the page to fully render
+                await sleep(500);
 
                 try {
-                    const gameSettingsButton = await WaitForElement(`div.${findModule(e => e.InPage).InPage} div.${findModule(e => e.AppButtonsContainer).AppButtonsContainer} > div.${findModule(e => e.MenuButtonContainer).MenuButtonContainer}:not([role="button"])`, popup.m_popup.document);
+                    // Find the game action area that contains the settings gear icon
+                    // Look for the container that has the PLAY button and other controls
+                    const doc = popup.m_popup.document;
                     
-                    if (!gameSettingsButton || !gameSettingsButton.parentNode) {
-                        console.log("[onlinefix] Could not find button container");
+                    // Method 1: Find by looking for elements near the settings/info icons
+                    let buttonContainer = null;
+                    
+                    // Look for the div that contains the settings gear and info icons
+                    // These are typically SVG icons in a flex container
+                    const allDivs = doc.querySelectorAll('div');
+                    
+                    for (const div of allDivs) {
+                        // Look for containers with multiple SVG children (gear, info, etc.)
+                        const svgs = div.querySelectorAll('svg');
+                        if (svgs.length >= 2) {
+                            // Check if this is in the right vertical position (near the PLAY button area)
+                            const rect = div.getBoundingClientRect();
+                            // The settings area is usually around 450-550px from top
+                            if (rect.top > 400 && rect.top < 600) {
+                                // Additional check: should be on the right side
+                                if (rect.right > 1000) {
+                                    // Check if it's a flex container
+                                    const styles = window.getComputedStyle(div);
+                                    if (styles.display === 'flex' || div.children.length >= 2) {
+                                        buttonContainer = div;
+                                        console.log("[onlinefix] Found button container near gear icon at:", rect);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Fallback: Look for any horizontal flex container with multiple button-like children
+                    if (!buttonContainer) {
+                        console.log("[onlinefix] Using fallback method to find button container");
+                        for (const div of allDivs) {
+                            const rect = div.getBoundingClientRect();
+                            // Check vertical position and reasonable width
+                            if (rect.top > 400 && rect.top < 600 && rect.width > 100) {
+                                // Check if it has multiple children that look like buttons
+                                if (div.children.length >= 2) {
+                                    // Check if children are button-sized
+                                    let hasButtonSizedChildren = false;
+                                    for (const child of div.children) {
+                                        const childRect = child.getBoundingClientRect();
+                                        if (childRect.width > 30 && childRect.width < 80 && 
+                                            childRect.height > 30 && childRect.height < 80) {
+                                            hasButtonSizedChildren = true;
+                                            break;
+                                        }
+                                    }
+                                    if (hasButtonSizedChildren) {
+                                        buttonContainer = div;
+                                        console.log("[onlinefix] Found button container (fallback) at:", rect);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (!buttonContainer) {
+                        console.error("[onlinefix] Could not find button container!");
                         return;
                     }
 
-                    // Remove old button if it exists
-                    const oldButton = gameSettingsButton.parentNode.querySelector('div.online-fix-button');
+                    // Remove old button if exists
+                    const oldButton = buttonContainer.querySelector('.online-fix-button');
                     if (oldButton) {
                         oldButton.remove();
                     }
 
-                    const moveButton = gameSettingsButton.cloneNode(true);
-                    moveButton.classList.add("online-fix-button");
-                    moveButton.firstChild.innerHTML = "FIX";
-                    moveButton.firstChild.style.color = "#D3D3D3";
-                    moveButton.firstChild.style.fontWeight = "bold";
-                    moveButton.firstChild.style.textShadow = "0 1px 2px rgba(0,0,0,0.3)";
-                    moveButton.firstChild.style.background = "transparent";
-                    moveButton.firstChild.style.padding = "0";
-                    moveButton.firstChild.style.margin = "0 auto";
-                    moveButton.firstChild.style.width = "100%";
-                    moveButton.firstChild.style.textAlign = "center";
-                    moveButton.style.background = "linear-gradient(135deg, #3a2a4a 0%, #4a3a5a 100%)";
-                    moveButton.style.border = "1px solid #5a4a6a";
-                    moveButton.style.borderRadius = "12px";
-                    moveButton.style.padding = "8px 16px";
-                    moveButton.style.minWidth = "70px";
-                    moveButton.style.display = "flex";
-                    moveButton.style.alignItems = "center";
-                    moveButton.style.justifyContent = "center";
-                    moveButton.style.transform = "scale(0.85)";
-                    moveButton.style.marginRight = "8px";
-                    moveButton.style.position = "relative";
-                    moveButton.style.top = "-2px";
-                    moveButton.addEventListener("mouseenter", () => {
-                        moveButton.style.background = "linear-gradient(135deg, #4a3a5a 0%, #5a4a6a 100%)";
-                    });
-                    moveButton.addEventListener("mouseleave", () => {
-                        moveButton.style.background = "linear-gradient(135deg, #3a2a4a 0%, #4a3a5a 100%)";
-                    });
-                    gameSettingsButton.parentNode.insertBefore(moveButton, gameSettingsButton);
+                    // Create the FIX button
+                    const fixButton = doc.createElement('div');
+                    fixButton.className = 'online-fix-button';
                     
-                    console.log("[onlinefix] FIX button added");
+                    // Style it to match Steam's button style
+                    fixButton.style.cssText = `
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: linear-gradient(135deg, #3a2a4a 0%, #4a3a5a 100%);
+                        border: 1px solid #5a4a6a;
+                        border-radius: 3px;
+                        padding: 8px 12px;
+                        margin: 0 6px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #D3D3D3;
+                        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+                        min-width: 45px;
+                        height: 40px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        user-select: none;
+                        flex-shrink: 0;
+                    `;
+                    
+                    fixButton.textContent = 'FIX';
 
-                    moveButton.addEventListener("click", async () => {
+                    // Hover effects
+                    fixButton.addEventListener('mouseenter', () => {
+                        fixButton.style.background = 'linear-gradient(135deg, #4a3a5a 0%, #5a4a6a 100%)';
+                        fixButton.style.transform = 'translateY(-1px)';
+                        fixButton.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+                    });
+
+                    fixButton.addEventListener('mouseleave', () => {
+                        fixButton.style.background = 'linear-gradient(135deg, #3a2a4a 0%, #4a3a5a 100%)';
+                        fixButton.style.transform = 'translateY(0)';
+                        fixButton.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                    });
+
+                    // Click handler - apply the fix
+                    fixButton.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
                         const currentAppId = uiStore.currentGameListSelection.nAppId;
                         console.log("[onlinefix] Fix button clicked for app:", currentAppId);
 
@@ -194,8 +196,9 @@ async function OnPopupCreation(popup) {
                         }
 
                         console.log("[onlinefix] Starting fix download...");
-                        moveButton.firstChild.innerHTML = "...";
-                        moveButton.style.pointerEvents = "none";
+                        fixButton.textContent = "...";
+                        fixButton.style.pointerEvents = "none";
+                        fixButton.style.opacity = "0.6";
 
                         try {
                             const result = await apply_online_fix({ app_id: currentAppId, target_path: gamePath });
@@ -203,63 +206,24 @@ async function OnPopupCreation(popup) {
                         } catch (error) {
                             console.error("[onlinefix] Error:", error);
                         } finally {
-                            moveButton.firstChild.innerHTML = "FIX";
-                            moveButton.style.pointerEvents = "";
+                            fixButton.textContent = "FIX";
+                            fixButton.style.pointerEvents = "";
+                            fixButton.style.opacity = "1";
                         }
                     });
 
-                } catch (error) {
-                    console.error("[onlinefix] Error adding FIX button:", error);
-                }
-
-                const contextMenuEnabled = await get_context_menu_enabled({});
-                if (contextMenuEnabled) {
-                    if (observer) {
-                        observer.disconnect();
+                    // Insert the button at the beginning of the container
+                    // This will place it before the settings/gear icon
+                    if (buttonContainer.firstChild) {
+                        buttonContainer.insertBefore(fixButton, buttonContainer.firstChild);
+                    } else {
+                        buttonContainer.appendChild(fixButton);
                     }
 
-                    const hasSpecificMenuItems = (container) => {
-                        const itemsText = Array.from(container.querySelectorAll(`div.${findModule(e => e.ContextMenuMouseOverlay).contextMenuItem}.contextMenuItem`))
-                            .map(el => el.textContent.trim());
-                        while (!findModule(e => e["CustomArt_EditLogoPosition"]));
-                        console.log("[onlinefix] CustomArt_EditLogoPosition == ", findModule(e => e["CustomArt_EditLogoPosition"])["CustomArt_EditLogoPosition"]);
-                        const requiredItems = [findModule(e => e["CustomArt_EditLogoPosition"])["CustomArt_EditLogoPosition"]];
-                        return requiredItems.every(item => itemsText.includes(item));
-                    };
+                    console.log("[onlinefix] FIX button added successfully!");
 
-                    const addMoveLogoButton = (container) => {
-                        if (!hasSpecificMenuItems(container)) return;
-                        if (container.querySelector('.contextMenuItem.moveLogoAdded')) return;
-
-                        const newItem = document.createElement('div');
-                        newItem.setAttribute('role', `${findModule(e => e.ContextMenuMouseOverlay).contextMenuItem}`);
-                        newItem.className = `${findModule(e => e.ContextMenuMouseOverlay).contextMenuItem} contextMenuItem moveLogoAdded`;
-                        newItem.textContent = 'Move Logo';
-                        newItem.addEventListener('click', async () => {
-                            await movementHandler();
-                            const parentDiv = container.parentElement;
-                            if (parentDiv) parentDiv.style.display = 'none';
-                            else container.style.display = 'none';
-                        });
-                        container.appendChild(newItem);
-                        console.log('[onlinefix] "Move Logo" item successfully added');
-                    };
-
-                    observer = new MutationObserver(mutations => {
-                        mutations.forEach(mutation => {
-                            mutation.addedNodes.forEach(node => {
-                                if (node.nodeType === 1) {
-                                    const container = node.querySelector(`div.${findModule(e => e.ContextMenuMouseOverlay).contextMenuContents}`) ||
-                                        (node.classList && node.classList.contains(`${findModule(e => e.ContextMenuMouseOverlay).contextMenuContents}`) ? node : null);
-                                    if (container) {
-                                        addMoveLogoButton(container);
-                                    }
-                                }
-                            });
-                        });
-                    });
-
-                    observer.observe(popup.m_popup.document.body, { childList: true, subtree: true });
+                } catch (error) {
+                    console.error("[onlinefix] Error adding FIX button:", error);
                 }
             }
         });
@@ -278,9 +242,9 @@ export default async function PluginMain() {
     }
 
     const doc = g_PopupManager.GetExistingPopup("SP Desktop_uid0");
-	if (doc) {
-		OnPopupCreation(doc);
-	}
+    if (doc) {
+        OnPopupCreation(doc);
+    }
 
-	g_PopupCreatedCallback(OnPopupCreation);
+    g_PopupCreatedCallback(OnPopupCreation);
 }
