@@ -58,14 +58,6 @@ OnlineFix is a [Millennium](https://github.com/SteamClientHomebrew/Millennium) p
 3. **Python 3.x** (for backend functionality)
 4. **Steam Client** (obviously!)
 
-### Install via Millennium Plugin Manager
-
-1. Open Millennium settings in Steam
-2. Navigate to the **Plugins** tab
-3. Search for "OnlineFix"
-4. Click **Install**
-5. Restart Steam
-
 ### Manual Installation
 
 1. Download the latest release from the [Releases](../../releases) page
@@ -332,3 +324,4 @@ This plugin is provided as-is. Always backup your games before applying fixes.
 
 
 </div>
+
