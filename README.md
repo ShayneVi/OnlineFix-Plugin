@@ -1,7 +1,7 @@
 # OnlineFix - Steam Millennium Plugin
 
 THANKS TO luthor112 AND HIS CUSTOM LOGO POSITION PLUGIN. i USED HIS AS A TEMPLATE.
-THANKS TO CLAUSE AI FOR THE CODING HELP.
+THANKS TO CLAUDE AI FOR THE CODING HELP.
 https://steambrew.app/plugin?id=113d5b98ee24
 
 
@@ -324,4 +324,5 @@ This plugin is provided as-is. Always backup your games before applying fixes.
 
 
 </div>
+
 
