@@ -1,7 +1,7 @@
-# OnlineFix - Steam Millennium Plugin
+	# OnlineFix - Steam Millennium Plugin
 
 THANKS TO luthor112 AND HIS CUSTOM LOGO POSITION PLUGIN. i USED HIS AS A TEMPLATE.
-THANKS TO CLAUDE AI FOR THE CODING HELP.
+THANKS TO CLAUSE AI FOR THE CODING HELP.
 https://steambrew.app/plugin?id=113d5b98ee24
 
 
@@ -34,7 +34,7 @@ OnlineFix is a [Millennium](https://github.com/SteamClientHomebrew/Millennium) p
   - Supports all Steam library locations
 
 - **📦 Comprehensive Fix Database**
-  - Over 800+ supported game AppIDs
+  - Over 1000+ supported game AppIDs
   - Regularly updated fix repository
   - Community-driven fix collection
 
@@ -57,6 +57,14 @@ OnlineFix is a [Millennium](https://github.com/SteamClientHomebrew/Millennium) p
 2. **Windows 10 or later**
 3. **Python 3.x** (for backend functionality)
 4. **Steam Client** (obviously!)
+
+### Install via Millennium Plugin Manager
+
+1. Open Millennium settings in Steam
+2. Navigate to the **Plugins** tab
+3. Search for "OnlineFix"
+4. Click **Install**
+5. Restart Steam
 
 ### Manual Installation
 
@@ -324,5 +332,3 @@ This plugin is provided as-is. Always backup your games before applying fixes.
 
 
 </div>
-
-
