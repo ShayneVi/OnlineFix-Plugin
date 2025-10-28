@@ -9,7 +9,7 @@ https://steambrew.app/plugin?id=113d5b98ee24
 
 **Seamlessly apply online fixes to your Steam games with one click**
 
-[![Platform](https://img.shields.io/badge/Platform-Windows-blue.svg)](https://www.microsoft.com/windows)
+[![Platform]()](https://www.microsoft.com/windows)
 [![Millennium](https://img.shields.io/badge/Millennium-Plugin-orange.svg)](https://github.com/SteamClientHomebrew/Millennium)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -57,14 +57,6 @@ OnlineFix is a [Millennium](https://github.com/SteamClientHomebrew/Millennium) p
 2. **Windows 10 or later**
 3. **Python 3.x** (for backend functionality)
 4. **Steam Client** (obviously!)
-
-### Install via Millennium Plugin Manager
-
-1. Open Millennium settings in Steam
-2. Navigate to the **Plugins** tab
-3. Search for "OnlineFix"
-4. Click **Install**
-5. Restart Steam
 
 ### Manual Installation
 
@@ -332,3 +324,4 @@ This plugin is provided as-is. Always backup your games before applying fixes.
 
 
 </div>
+
