@@ -11,7 +11,7 @@ https://steambrew.app/plugin?id=113d5b98ee24
 
 [![Platform]()](https://www.microsoft.com/windows)
 [![Millennium](https://img.shields.io/badge/Millennium-Plugin-orange.svg)](https://github.com/SteamClientHomebrew/Millennium)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License]()](LICENSE)
 
 </div>
 
@@ -162,7 +162,7 @@ The TypeScript frontend:
 
 ## 🎯 Supported Games
 
-The plugin supports **1,000+ games**. Some examples include:
+The plugin supports **1200+ games**. Some examples include:
 
 - Counter-Strike: Global Offensive
 - Team Fortress 2
@@ -324,4 +324,5 @@ This plugin is provided as-is. Always backup your games before applying fixes.
 
 
 </div>
+
 
